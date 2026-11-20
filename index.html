@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TownBasket – Bringing Local Shopping Online</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+    html { scroll-behavior: smooth; }
+    body { background: #f4faf5; color: #1f2937; line-height: 1.5; }
+
+    /* Navbar */
+    .navbar {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 1rem 5%; background: #ffffff; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      position: sticky; top: 0; z-index: 10;
+    }
+    .logo { font-size: 1.4rem; font-weight: 700; color: #16a34a; text-decoration: none; }
+    .navbar nav a { margin-left: 1.2rem; text-decoration: none; color: #374151; font-weight: 600; }
+    .cart-link { background: #dcfce7; color: #15803d !important; padding: 0.4rem 0.9rem; border-radius: 999px; }
+
+    /* Hero Section */
+    .hero {
+      text-align: center; padding: 4rem 1.5rem;
+      background: linear-gradient(135deg, #16a34a, #15803d); color: #ffffff;
+    }
+    .hero h1 { font-size: 2.2rem; margin-bottom: 0.6rem; }
+    .hero p { margin-bottom: 1.5rem; opacity: 0.95; }
+
+    /* Reusable Rounded Button */
+    .btn {
+      display: inline-block; background: #16a34a; color: #ffffff; border: none;
+      padding: 0.65rem 1.4rem; border-radius: 999px; font-weight: 600;
+      cursor: pointer; text-decoration: none; transition: background 0.2s;
+    }
+    .btn:hover { background: #15803d; }
+    .hero .btn { background: #ffffff; color: #15803d; }
+    .hero .btn:hover { background: #dcfce7; }
+
+    /* Main Container & Controls */
+    .container { max-width: 1100px; margin: 2rem auto; padding: 0 1rem; }
+    .controls { display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.8rem; }
+    #search-input {
+      width: 100%; padding: 0.75rem 1rem; border: 1.5px solid #d1d5db;
+      border-radius: 999px; font-size: 1rem; outline: none;
+    }
+    #search-input:focus { border-color: #16a34a; }
+    .categories { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+    .cat-btn {
+      padding: 0.45rem 1rem; border: 1.5px solid #16a34a; background: #ffffff;
+      color: #16a34a; border-radius: 999px; cursor: pointer; font-weight: 600;
+    }
+    .cat-btn.active, .cat-btn:hover { background: #16a34a; color: #ffffff; }
+
+    /* Product Grid & Cards */
+    .product-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+      gap: 1.4rem; margin-bottom: 3rem;
+    }
+    .card {
+      background: #ffffff; border-radius: 14px; overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06); display: flex; flex-direction: column;
+    }
+    .card img { width: 100%; height: 165px; object-fit: cover; }
+    .card-body { padding: 1rem; display: flex; flex-direction: column; gap: 0.4rem; flex: 1; }
+    .badge { font-size: 0.75rem; color: #15803d; background: #dcfce7; width: fit-content; padding: 0.15rem 0.6rem; border-radius: 999px; }
+    .price { font-size: 1.1rem; font-weight: 700; color: #111827; margin-bottom: 0.4rem; }
+    .card .btn { width: 100%; margin-top: auto; }
+
+    /* Shopping Cart */
+    .cart { background: #ffffff; padding: 1.5rem; border-radius: 14px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06); }
+    .cart h2 { margin-bottom: 1rem; color: #15803d; }
+    .cart-item {
+      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;
+      gap: 0.8rem; padding: 0.8rem 0; border-bottom: 1px solid #e5e7eb;
+    }
+    .qty-controls { display: flex; align-items: center; gap: 0.5rem; }
+    .qty-btn {
+      width: 28px; height: 28px; border: 1px solid #d1d5db; background: #f9fafb;
+      border-radius: 50%; cursor: pointer; font-weight: 700;
+    }
+    .remove-btn { background: #fee2e2; color: #dc2626; border: none; padding: 0.3rem 0.7rem; border-radius: 999px; cursor: pointer; font-size: 0.85rem; }
+    .cart-footer {
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 1rem; margin-top: 1.2rem;
+    }
+    .empty-msg { color: #6b7280; padding: 0.8rem 0; }
+  </style>
+</head>
+<body>
+  <!-- Navigation Bar -->
+  <header class="navbar">
+    <a href="#" class="logo">🛒 TownBasket</a>
+    <nav>
+      <a href="#products">Shop</a>
+      <a href="#cart-section" class="cart-link">Cart (<span id="cart-count">0</span>)</a>
+    </nav>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <h1>Bringing Local Shopping Online</h1>
+    <p>Fresh groceries, fruits, snacks & beverages from your neighbourhood shops.</p>
+    <a href="#products" class="btn">Shop Now</a>
+  </section>
+
+  <!-- Search & Category Filters -->
+  <main class="container">
+    <div class="controls">
+      <input type="text" id="search-input" placeholder="Search products by name...">
+      <div class="categories">
+        <button class="cat-btn active" onclick="filterCategory('All', this)">All</button>
+        <button class="cat-btn" onclick="filterCategory('Grocery', this)">Grocery</button>
+        <button class="cat-btn" onclick="filterCategory('Fruits', this)">Fruits</button>
+        <button class="cat-btn" onclick="filterCategory('Snacks', this)">Snacks</button>
+        <button class="cat-btn" onclick="filterCategory('Beverages', this)">Beverages</button>
+      </div>
+    </div>
+
+    <!-- Product Grid -->
+    <section id="products" class="product-grid"></section>
+
+    <!-- Shopping Cart -->
+    <section id="cart-section" class="cart">
+      <h2>Your Shopping Cart</h2>
+      <div id="cart-items"></div>
+      <div class="cart-footer">
+        <h3>Total: ₹<span id="cart-total">0</span></h3>
+        <button class="btn" onclick="placeOrder()">Place Order on WhatsApp</button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // 8 sample products across 4 categories
+    const products = [
+      { id: 1, name: "Basmati Rice (1 kg)", category: "Grocery", price: 120, image: "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=400" },
+      { id: 2, name: "Cooking Oil (1 L)", category: "Grocery", price: 165, image: "https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=400" },
+      { id: 3, name: "Fresh Red Apples (1 kg)", category: "Fruits", price: 150, image: "https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=400" },
+      { id: 4, name: "Fresh Bananas (1 Dozen)", category: "Fruits", price: 60, image: "https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=400" },
+      { id: 5, name: "Salted Potato Chips", category: "Snacks", price: 40, image: "https://images.unsplash.com/photo-1566478989037-eec170784d0b?w=400" },
+      { id: 6, name: "Butter Cookies Pack", category: "Snacks", price: 55, image: "https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=400" },
+      { id: 7, name: "Fresh Orange Juice (1 L)", category: "Beverages", price: 110, image: "https://images.unsplash.com/photo-1621506289937-a8e4df240d0b?w=400" },
+      { id: 8, name: "Classic Green Tea", category: "Beverages", price: 140, image: "https://images.unsplash.com/photo-1564890369478-c89ca6d9cde9?w=400" }
+    ];
+
+    // Load saved cart from LocalStorage or start empty
+    let cart = JSON.parse(localStorage.getItem("townbasket_cart")) || [];
+    let selectedCategory = "All";
+
+    const productList = document.getElementById("products");
+    const searchInput = document.getElementById("search-input");
+
+    // Display products based on active category and search query
+    function renderProducts() {
+      const query = searchInput.value.toLowerCase();
+      const filtered = products.filter(p =>
+        (selectedCategory === "All" || p.category === selectedCategory) &&
+        p.name.toLowerCase().includes(query)
+      );
+
+      if (filtered.length === 0) {
+        productList.innerHTML = `<p class="empty-msg">No products found.</p>`;
+        return;
+      }
+
+      productList.innerHTML = filtered.map(p => `
+        <div class="card">
+          <img src="${p.image}" alt="${p.name}">
+          <div class="card-body">
+            <span class="badge">${p.category}</span>
+            <h3>${p.name}</h3>
+            <p class="price">₹${p.price}</p>
+            <button class="btn" onclick="addToCart(${p.id})">Add to Cart</button>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    // Update active category button and re-render products
+    function filterCategory(category, btn) {
+      selectedCategory = category;
+      document.querySelectorAll(".cat-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      renderProducts();
+    }
+
+    // Add product to cart or increase its quantity
+    function addToCart(id) {
+      const existing = cart.find(item => item.id === id);
+      if (existing) {
+        existing.qty += 1;
+      } else {
+        const product = products.find(p => p.id === id);
+        cart.push({ ...product, qty: 1 });
+      }
+      saveAndRenderCart();
+    }
+
+    // Increase or decrease item quantity
+    function changeQty(id, delta) {
+      const item = cart.find(i => i.id === id);
+      if (!item) return;
+      item.qty += delta;
+      if (item.qty <= 0) cart = cart.filter(i => i.id !== id);
+      saveAndRenderCart();
+    }
+
+    // Remove an item completely from cart
+    function removeFromCart(id) {
+      cart = cart.filter(i => i.id !== id);
+      saveAndRenderCart();
+    }
+
+    // Save cart to LocalStorage and update cart UI
+    function saveAndRenderCart() {
+      localStorage.setItem("townbasket_cart", JSON.stringify(cart));
+      const cartItems = document.getElementById("cart-items");
+      const cartTotal = document.getElementById("cart-total");
+      const cartCount = document.getElementById("cart-count");
+
+      const totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
+      const totalBill = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+      cartCount.textContent = totalItems;
+      cartTotal.textContent = totalBill;
+
+      if (cart.length === 0) {
+        cartItems.innerHTML = `<p class="empty-msg">Your cart is empty. Add items to get started!</p>`;
+        return;
+      }
+
+      cartItems.innerHTML = cart.map(item => `
+        <div class="cart-item">
+          <div><strong>${item.name}</strong> — ₹${item.price} × ${item.qty} = ₹${item.price * item.qty}</div>
+          <div class="qty-controls">
+            <button class="qty-btn" onclick="changeQty(${item.id}, -1)">-</button>
+            <span>${item.qty}</span>
+            <button class="qty-btn" onclick="changeQty(${item.id}, 1)">+</button>
+            <button class="remove-btn" onclick="removeFromCart(${item.id})">Remove</button>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    // Prepare WhatsApp order summary and open WhatsApp
+    function placeOrder() {
+      if (cart.length === 0) {
+        alert("Your cart is empty! Please add products before placing an order.");
+        return;
+      }
+      const shopPhone = "919602042658"; // Replace with actual shop WhatsApp number
+      const lines = cart.map(i => `- ${i.name} x ${i.qty} = ₹${i.price * i.qty}`);
+      const total = cart.reduce((sum, i) => sum + i.price * i.qty, 0);
+      const message = `Hello TownBasket! I would like to place an order:\n${lines.join("\n")}\n\nTotal Bill: ₹${total}`;
+      window.open(`https://wa.me/${shopPhone}?text=${encodeURIComponent(message)}`, "_blank");
+    }
+
+    // Live search listener and initial render
+    searchInput.addEventListener("input", renderProducts);
+    renderProducts();
+    saveAndRenderCart();
+  </script>
+</body>
+</html>
